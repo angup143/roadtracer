@@ -27,15 +27,15 @@ WINDOW_SIZE = 256
 SAVE_EXAMPLES = False
 FOLLOW_TARGETS = False
 
-REGION = 'chicago'
-TILE_SIZE = 4096
-TILE_START = geom.Point(-1, -2).scale(TILE_SIZE)
-TILE_END = TILE_START.add(geom.Point(2, 2).scale(TILE_SIZE))
+REGION = '3230213_crop'
+TILE_SIZE = 1984
+TILE_START = geom.Point(0, 0).scale(TILE_SIZE)
+TILE_END = TILE_START.add(geom.Point(2, 3).scale(TILE_SIZE))
 
-USE_TL_LOCATIONS = True
-MANUAL_RELATIVE = geom.Point(-1, -2).scale(TILE_SIZE)
-MANUAL_POINT1 = geom.Point(2560, 522)
-MANUAL_POINT2 = geom.Point(2592, 588)
+USE_TL_LOCATIONS = False
+MANUAL_RELATIVE = geom.Point(0, 0).scale(TILE_SIZE)
+MANUAL_POINT1 = geom.Point(660, 1044)
+MANUAL_POINT2 = geom.Point(890, 1200)
 
 def vector_to_action(angle_outputs, stop_outputs, threshold):
 	x = numpy.zeros((64,), dtype='float32')
@@ -47,14 +47,14 @@ def action_to_vector(v):
 	angle_outputs = numpy.zeros((64,), dtype='float32')
 	stop_outputs = numpy.zeros((2,), dtype='float32')
 	count = 0
-	for i in xrange(len(v)):
+	for i in range(len(v)):
 		if v[i] > 0.9:
 			count += 1
 	if count == 0:
 		stop_outputs[1] = 1
 	else:
 		stop_outputs[0] = 1
-		for i in xrange(len(v)):
+		for i in range(len(v)):
 			if v[i] > 0.9:
 				angle_outputs[i] = 1.0 / count
 	return angle_outputs, stop_outputs
@@ -64,7 +64,7 @@ def fix_outputs(batch_angle_outputs, batch_stop_outputs):
 		return batch_angle_outputs, batch_stop_outputs
 	elif batch_angle_outputs.shape[1] == 65:
 		fixed_stop_outputs = numpy.zeros((batch_angle_outputs.shape[0], 2), dtype='float32')
-		for i in xrange(batch_angle_outputs.shape[0]):
+		for i in range(batch_angle_outputs.shape[0]):
 			if numpy.argmax(batch_angle_outputs[i, :]) == 64:
 				fixed_stop_outputs[i, 1] = 1
 			else:
@@ -100,14 +100,14 @@ def eval(paths, m, session, max_path_length=MAX_PATH_LENGTH, segment_length=SEGM
 	stop_losses = []
 	losses = []
 	accuracies = []
-	path_lengths = {path_idx: 0 for path_idx in xrange(len(paths))}
+	path_lengths = {path_idx: 0 for path_idx in range(len(paths))}
 
 	last_time = None
 	big_time = None
 
-	for len_it in xrange(99999999):
+	for len_it in range(99999999):
 		if len_it % 500 == 0 and verbose:
-			print 'it {}'.format(len_it)
+			print('it {}'.format(len_it))
 			big_time = time.time()
 		path_indices = []
 		extension_vertices = []
@@ -132,7 +132,7 @@ def eval(paths, m, session, max_path_length=MAX_PATH_LENGTH, segment_length=SEGM
 		batch_angle_targets = numpy.zeros((len(path_indices), 64), 'float32')
 		batch_stop_targets = numpy.zeros((len(path_indices), 2), 'float32')
 
-		for i in xrange(len(path_indices)):
+		for i in range(len(path_indices)):
 			path_idx = path_indices[i]
 
 			path_input, path_detect_target = model_utils.make_path_input(paths[path_idx], extension_vertices[i], segment_length, window_size=window_size)
@@ -166,7 +166,7 @@ def eval(paths, m, session, max_path_length=MAX_PATH_LENGTH, segment_length=SEGM
 				save_angle_targets = None
 			model_utils.make_path_input(paths[path_indices[0]], extension_vertices[0], segment_length, fname=fname, angle_targets=save_angle_targets, angle_outputs=batch_angle_outputs[0, :], detect_output=batch_detect_outputs[0, :, :, 0], window_size=window_size)
 
-		for i in xrange(len(path_indices)):
+		for i in range(len(path_indices)):
 			path_idx = path_indices[i]
 			if len(extension_vertices[i].out_edges) >= 2:
 				threshold = THRESHOLD_BRANCH
@@ -230,7 +230,7 @@ def graph_filter(g, threshold=0.3, min_len=None):
 		avg_prob = numpy.mean(probs)
 		if avg_prob < threshold:
 			bad_edges.update(rs.edges)
-	print 'filtering {} edges'.format(len(bad_edges))
+	print('filtering {} edges'.format(len(bad_edges)))
 	ng = graph.Graph()
 	vertex_map = {}
 	for vertex in g.vertices:
@@ -272,11 +272,11 @@ if __name__ == '__main__':
 		tileloader.pytiles_path = os.path.join(args.j, 'pytiles.json')
 		tileloader.startlocs_path = os.path.join(args.j, 'starting_locations.json')
 
-	print 'reading tiles'
+	print('reading tiles')
 	#tileloader.use_vhr()
 	tiles = tileloader.Tiles(PATHS_PER_TILE_AXIS, SEGMENT_LENGTH, 16, TILE_MODE)
 
-	print 'initializing model'
+	print('initializing model')
 	model.BATCH_SIZE = 1
 	m = model.Model(tiles.num_input_channels())
 	session = tf.Session()
@@ -342,9 +342,9 @@ if __name__ == '__main__':
 			r = edge.segment().bounds().add_tol(100)
 			nearby_edges = path.edge_rtree.intersection((r.start.x, r.start.y, r.end.x, r.end.y))
 			if len(list(nearby_edges)) > 0:
-				print 'skip {}'.format(edge.id)
+				print('skip {}'.format(edge.id))
 				continue
-			print 'process {}'.format(edge.id)
+			print( 'process {}'.format(edge.id))
 			v1 = pg.add_vertex(edge.src.point)
 			v2 = pg.add_vertex(edge.dst.point)
 			v1.edge_pos = None
@@ -355,7 +355,7 @@ if __name__ == '__main__':
 			result = eval([path], m, session, save=False, compute_targets=compute_targets, follow_targets=FOLLOW_TARGETS)
 	else:
 		result = eval([path], m, session, save=SAVE_EXAMPLES, compute_targets=compute_targets, follow_targets=FOLLOW_TARGETS)
-	print result
+	print(result)
 	if args.f > 0:
 		path.graph = graph_filter(path.graph, threshold=0.75, min_len=8)
 	path.graph.save(output_fname)

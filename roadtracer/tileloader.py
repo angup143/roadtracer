@@ -10,18 +10,18 @@ import rtree
 import scipy.ndimage
 import time
 
-tile_dir = '/data/imagery/'
+tile_dir = '/home/ananya/Documents/rds-share/data/digitalglobe/indonesia/opendata.digitalglobe.com/palu-tsunami/pre-event/2018-04-07/103001007B2D7C00'
 graph_dir = '/data/graphs/'
 pytiles_path = '/data/json/pytiles.json'
 startlocs_path = '/data/json/starting_locations.json'
 tile_size = 4096
 window_size = 512
-TRAINING_REGIONS = ['indianapolis', 'louisville', 'columbus', 'milwaukee', 'minneapolis', 'seattle', 'portland', 'sf', 'san antonio', 'vegas', 'phoenix', 'dallas', 'austin', 'san jose', 'houston', 'miami', 'tampa', 'orlando', 'atlanta', 'st louis', 'nashville', 'dc', 'baltimore', 'philadelphia', 'london']
-REGIONS = TRAINING_REGIONS + ['chicago']
+TRAINING_REGIONS = []
+REGIONS = TRAINING_REGIONS + ['3230213_crop']
 
 def load_tile(region, i, j, mode='all'):
 	prefix = '{}/{}_{}_{}_'.format(tile_dir, region, i, j)
-	sat_im = scipy.ndimage.imread(prefix + 'sat.png')
+	sat_im = scipy.ndimage.imread(prefix + '.tif')
 	if sat_im.shape == (tile_size, tile_size, 4):
 		sat_im = sat_im[:, :, 0:3]
 	return {
@@ -43,8 +43,8 @@ def load_rect(region, rect, load_func=load_tile, mode='all'):
 	)
 	full_ims = {}
 
-	for i in xrange(tile_rect.start.x, tile_rect.end.x):
-		for j in xrange(tile_rect.start.y, tile_rect.end.y):
+	for i in range(tile_rect.start.x, tile_rect.end.x):
+		for j in range(tile_rect.start.y, tile_rect.end.y):
 			p = geom.Point(i - tile_rect.start.x, j - tile_rect.start.y).scale(tile_size)
 			tile_ims = load_func(region, i, j, mode=mode)
 			for k, im in tile_ims.iteritems():
@@ -145,7 +145,7 @@ class Tiles(object):
 		# load tile list
 		# this is a list of point dicts (a point dict has keys 'x', 'y')
 		# don't include test tiles
-		print 'reading tiles'
+		print('reading tiles')
 		self.all_tiles = get_tile_list()
 		self.cache = TileCache(limit=self.parallel_tiles, mode=self.tile_mode)
 
@@ -162,12 +162,12 @@ class Tiles(object):
 
 	def cache_gcs(self, regions):
 		for region in regions:
-			print 'reading graph for region {}'.format(region)
+			print('reading graph for region {}'.format(region))
 			self.get_gc(region)
 
 	def prepare_training(self):
 		self.cache_gcs(REGIONS)
-		print 'get starting locations'
+		print('get starting locations')
 		self.all_starting_locations = get_starting_locations(self.gcs, self.segment_length)
 
 		def tile_filter(tile):
@@ -184,7 +184,7 @@ class Tiles(object):
 
 		old_len = len(self.train_tiles)
 		self.train_tiles = [tile for tile in self.train_tiles if tile.region in TRAINING_REGIONS]
-		print 'go from {} to {} tiles after excluding regions'.format(old_len, len(self.train_tiles))
+		print('go from {} to {} tiles after excluding regions'.format(old_len, len(self.train_tiles)))
 		random.shuffle(self.train_tiles)
 
 	def get_tile_data(self, region, rect):
