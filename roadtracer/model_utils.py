@@ -128,7 +128,7 @@ class Path(object):
 		max_angle = numpy.max(angle_outputs)
 
 		if max_angle < follow_threshold or (max_angle < branch_threshold and len(extension_vertex.out_edges) >= 2) or len(extension_vertex.out_edges) > 4:
-			if DEBUG: print '... push: decided to stop'
+			if DEBUG: print('... push: decided to stop')
 
 			if self.gc is not None and len(extension_vertex.out_edges) >= 1:
 				# stop; we should mark path explored
@@ -137,7 +137,7 @@ class Path(object):
 				if probs is not None:
 					best_rs = graph.mm_best_rs(self.gc.road_segments, probs)
 					rs_list = graph.mm_follow_backpointers(self.gc.road_segments, best_rs.id, backpointers)
-					if DEBUG: print '... push: stop, so marking rs explored: ({})'.format([rs.id for rs in rs_list[2:] + [best_rs]])
+					if DEBUG: print( '... push: stop, so marking rs explored: ({})'.format([rs.id for rs in rs_list[2:] + [best_rs]]))
 					for rs in set([rs for rs in rs_list[2:] if rs != best_rs]):
 						self.mark_rs_explored(rs)
 					best_pos = best_rs.closest_pos(extension_vertex.point)
@@ -181,7 +181,7 @@ class Path(object):
 						best_vertex = vertex
 						best_distance = distance
 			if best_vertex is not None:
-				if DEBUG: print '... push: decided to reconnect with existing vertex at {}'.format(best_vertex.point)
+				if DEBUG: print('... push: decided to reconnect with existing vertex at {}'.format(best_vertex.point))
 
 				if self.gc is not None:
 					# mark path up to best_vertex as explored
@@ -194,7 +194,7 @@ class Path(object):
 					if probs is not None:
 						best_rs = graph.mm_best_rs(self.gc.road_segments, probs)
 						rs_list = graph.mm_follow_backpointers(self.gc.road_segments, best_rs.id, backpointers)
-						if DEBUG: print '... push: reconnect: marking explored rs: {}'.format([rs.id for rs in rs_list[2:]])
+						if DEBUG: print('... push: reconnect: marking explored rs: {}'.format([rs.id for rs in rs_list[2:]]))
 						for rs in set(rs_list[2:] + [best_rs]):
 							self.mark_rs_explored(rs)
 
@@ -213,7 +213,7 @@ class Path(object):
 				path_to_next = self.get_path_to(next_vertex)
 				probs, backpointers = graph.mapmatch(self.gc.edge_index, self.gc.road_segments, self.gc.edge_to_rs, [vertex.point for vertex in path_to_next], segment_length)
 				if probs is not None:
-					if DEBUG: print '... push: mm probs: {}'.format(probs)
+					if DEBUG: print('... push: mm probs: {}'.format(probs))
 					best_rs = graph.mm_best_rs(self.gc.road_segments, probs)
 					best_pos = best_rs.closest_pos(next_vertex.point)
 
@@ -222,16 +222,16 @@ class Path(object):
 						next_vertex.edge_pos = best_pos
 						if len(path_to_next) >= 10:
 							rs_list = graph.mm_follow_backpointers(self.gc.road_segments, best_rs.id, backpointers)
-							if DEBUG: print '... push: mm: {}'.format([rs.id for rs in rs_list])
+							if DEBUG: print('... push: mm: {}'.format([rs.id for rs in rs_list]))
 							if in_bounds:
-								if DEBUG: print '... push: normal extend, marking explored rs: {}'.format([rs.id for rs in rs_list[2:5] if rs not in rs_list[5:]])
+								if DEBUG: print('... push: normal extend, marking explored rs: {}'.format([rs.id for rs in rs_list[2:5] if rs not in rs_list[5:]]))
 								for rs in rs_list[2:4]:
 									if rs in rs_list[4:]:
 										# don't mark edges along rs that we might still be following as explored
 										continue
 									self.mark_rs_explored(rs)
 							else:
-								if DEBUG: print '... push: normal extend but out of bounds, marking explored rs: {}'.format([rs.id for rs in rs_list[2:] + [best_rs]])
+								if DEBUG: print('... push: normal extend but out of bounds, marking explored rs: {}'.format([rs.id for rs in rs_list[2:] + [best_rs]]))
 								for rs in set(rs_list[2:] + [best_rs]):
 									self.mark_rs_explored(rs)
 					else:
@@ -447,7 +447,7 @@ def compute_targets_by_best(path, extension_vertex, segment_length):
 				potential_rs.append(opposite_rs2)
 				if opposite_rs1 != opposite_rs2:
 					if opposite_rs1 is None:
-						print 'warning: using opposite_rs2 for rs {}'.format(opposite_rs2.id)
+						print('warning: using opposite_rs2 for rs {}'.format(opposite_rs2.id))
 					else:
 						raise Exception('opposite_rs1 ({}) != opposite_rs2 ({})'.format(opposite_rs1.id, opposite_rs2.id))
 
@@ -456,22 +456,22 @@ def compute_targets_by_best(path, extension_vertex, segment_length):
 		potential_rs = get_potential_rs(segment_length, True)
 
 		if len(potential_rs) + 1 > len(extension_vertex.out_edges):
-			if DEBUG: print '... compute_targets_by_best: potential_rs={}'.format([rs.id for rs in potential_rs])
+			if DEBUG: print('... compute_targets_by_best: potential_rs={}'.format([rs.id for rs in potential_rs]))
 			expected_positions = []
 			for rs in potential_rs:
 				pos = rs.closest_pos(extension_vertex.point)
 				if path.is_explored(pos):
 					continue
 				rs_follow_positions = graph.follow_graph(pos, segment_length, explored_node_pairs=path.explored_pairs)
-				if DEBUG: print '... compute_targets_by_best: rs {}: closest pos to extension point {} is on edge {}@{} at {}'.format(rs.id, extension_vertex.point, pos.edge.id, pos.distance, pos.point())
+				if DEBUG: print('... compute_targets_by_best: rs {}: closest pos to extension point {} is on edge {}@{} at {}'.format(rs.id, extension_vertex.point, pos.edge.id, pos.distance, pos.point()))
 				for rs_follow_pos in rs_follow_positions:
-					if DEBUG: print '... compute_targets_by_best: rs {}: ... {}@{} at {}'.format(rs.id, rs_follow_pos.edge.id, rs_follow_pos.distance, rs_follow_pos.point())
+					if DEBUG: print('... compute_targets_by_best: rs {}: ... {}@{} at {}'.format(rs.id, rs_follow_pos.edge.id, rs_follow_pos.distance, rs_follow_pos.point()))
 				expected_positions.extend(rs_follow_positions)
 			set_by_positions(expected_positions)
 		else:
-			if DEBUG: print '... compute_targets_by_best: found {} potential rs but already have {} outgoing edges'.format(len(potential_rs), len(extension_vertex.out_edges))
+			if DEBUG: print('... compute_targets_by_best: found {} potential rs but already have {} outgoing edges'.format(len(potential_rs), len(extension_vertex.out_edges)))
 	else:
-		if DEBUG: print '... compute_targets_by_best: edge_pos is None'
+		if DEBUG: print('... compute_targets_by_best: edge_pos is None')
 
 	return angle_targets
 
@@ -508,25 +508,25 @@ def helper_compute_viz_points(path, extension_vertex, segment_length):
 		nx_points = []
 
 		if len(potential_rs) + 1 > len(extension_vertex.out_edges):
-			if DEBUG: print '... compute_targets_by_best: potential_rs={}'.format([rs.id for rs in potential_rs])
+			if DEBUG: print('... compute_targets_by_best: potential_rs={}'.format([rs.id for rs in potential_rs]))
 			expected_positions = []
 			for rs in potential_rs:
 				pos = rs.closest_pos(extension_vertex.point)
 				if path.is_explored(pos):
 					continue
 				rs_follow_positions = graph.follow_graph(pos, segment_length, explored_node_pairs=path.explored_pairs)
-				if DEBUG: print '... compute_targets_by_best: rs {}: closest pos to extension point {} is on edge {}@{} at {}'.format(rs.id, extension_vertex.point, pos.edge.id, pos.distance, pos.point())
+				if DEBUG: print('... compute_targets_by_best: rs {}: closest pos to extension point {} is on edge {}@{} at {}'.format(rs.id, extension_vertex.point, pos.edge.id, pos.distance, pos.point()))
 				for rs_follow_pos in rs_follow_positions:
-					if DEBUG: print '... compute_targets_by_best: rs {}: ... {}@{} at {}'.format(rs.id, rs_follow_pos.edge.id, rs_follow_pos.distance, rs_follow_pos.point())
+					if DEBUG: print('... compute_targets_by_best: rs {}: ... {}@{} at {}'.format(rs.id, rs_follow_pos.edge.id, rs_follow_pos.distance, rs_follow_pos.point()))
 				nx_points.extend([pos.point() for pos in rs_follow_positions])
 		else:
-			if DEBUG: print '... compute_targets_by_best: found {} potential rs but already have {} outgoing edges'.format(len(potential_rs), len(extension_vertex.out_edges))
+			if DEBUG: print('... compute_targets_by_best: found {} potential rs but already have {} outgoing edges'.format(len(potential_rs), len(extension_vertex.out_edges)))
 
 		return {
 			'mm': mm_point,
 			'nx': nx_points,
 		}
 	else:
-		if DEBUG: print '... compute_targets_by_best: edge_pos is None'
+		if DEBUG: print('... compute_targets_by_best: edge_pos is None')
 
 	return None

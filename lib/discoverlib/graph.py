@@ -169,7 +169,7 @@ def read_graph(fname, merge_duplicates=False):
 				if len(parts) >= 2:
 					point = geom.Point(float(parts[0]), float(parts[1]))
 					if point in seen_points and merge_duplicates:
-						print 'merging duplicate vertex at {}'.format(point)
+						print('merging duplicate vertex at {}'.format(point))
 						vertices[next_vertex_id] = seen_points[point]
 					else:
 						vertex = graph.add_vertex(point)
@@ -182,7 +182,7 @@ def read_graph(fname, merge_duplicates=False):
 				src = vertices[int(parts[0])]
 				dst = vertices[int(parts[1])]
 				if src == dst and merge_duplicates:
-					print 'ignoring self edge at {}'.format(src.point)
+					print('ignoring self edge at {}'.format(src.point))
 					continue
 				graph.add_edge(src, dst)
 	return graph
