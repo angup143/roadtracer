@@ -356,7 +356,7 @@ class RoadSegment(object):
 			l += edge.segment().length()
 
 	def distance_to_edge(self, distance, return_idx=False):
-		for i in xrange(len(self.edges)):
+		for i in range(len(self.edges)):
 			edge = self.edges[i]
 			distance -= edge.segment().length()
 			if distance <= 0:
@@ -516,9 +516,9 @@ def mapmatch(index, road_segments, edge_to_rs, points, segment_length):
 
 		return best_distance, best_rs_distance
 
-	backpointers = [{} for _ in xrange(len(points) - 1)]
+	backpointers = [{} for _ in range(len(points) - 1)]
 
-	for i in xrange(len(points) - 1):
+	for i in range(len(points) - 1):
 		next_probs = {}
 		for prev_rs_id in probs:
 			prev_p, prev_rs_distance = probs[prev_rs_id]
@@ -555,7 +555,7 @@ def mm_best_rs(road_segments, probs, rs_blacklist=None):
 
 def mm_follow_backpointers(road_segments, rs_id, backpointers):
 	rs_list = []
-	for i in xrange(len(backpointers) - 1, -1, -1):
+	for i in range(len(backpointers) - 1, -1, -1):
 		rs_id = backpointers[i][rs_id]
 		rs_list.append(road_segments[rs_id])
 	rs_list.reverse()
