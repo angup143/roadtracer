@@ -11,16 +11,16 @@ import scipy.ndimage
 import time
 
 tile_dir = '/home/ananya/Documents/rds-share/data/digitalglobe/indonesia/opendata.digitalglobe.com/palu-tsunami/pre-event/2018-04-07/103001007B2D7C00'
-graph_dir = '/data/graphs/'
-pytiles_path = '/data/json/pytiles.json'
-startlocs_path = '/data/json/starting_locations.json'
+graph_dir = '/home/ananya/data/graphs/'
+pytiles_path = '/home/ananya/data/json/pytiles.json'
+startlocs_path = '/home/ananya/data/json/starting_locations.json'
 tile_size = 4096
 window_size = 512
 TRAINING_REGIONS = []
 REGIONS = TRAINING_REGIONS + ['3230213_crop']
 
 def load_tile(region, i, j, mode='all'):
-	prefix = '{}/{}_{}_{}_'.format(tile_dir, region, i, j)
+	prefix = '{}/{}_{}_{}'.format(tile_dir, region, i, j)
 	sat_im = scipy.ndimage.imread(prefix + '.tif')
 	if sat_im.shape == (tile_size, tile_size, 4):
 		sat_im = sat_im[:, :, 0:3]
@@ -47,11 +47,11 @@ def load_rect(region, rect, load_func=load_tile, mode='all'):
 		for j in range(tile_rect.start.y, tile_rect.end.y):
 			p = geom.Point(i - tile_rect.start.x, j - tile_rect.start.y).scale(tile_size)
 			tile_ims = load_func(region, i, j, mode=mode)
-			for k, im in tile_ims.iteritems():
+			for k, im in tile_ims.items():
 				scale = tile_size / im.shape[0]
 				if k not in full_ims:
-					full_ims[k] = numpy.zeros((full_rect.lengths().x / scale, full_rect.lengths().y / scale, im.shape[2]), dtype='uint8')
-				full_ims[k][p.x/scale:(p.x+tile_size)/scale, p.y/scale:(p.y+tile_size)/scale, :] = im
+					full_ims[k] = numpy.zeros((int(full_rect.lengths().x/scale), int(full_rect.lengths().y/scale), im.shape[2]), dtype='uint8')
+				full_ims[k][int(p.x/scale):int((p.x+tile_size)/scale), int(p.y/scale):int((p.y+tile_size)/scale), :] = im
 
 	crop_rect = geom.Rectangle(
 		rect.start.sub(full_rect.start),
@@ -59,7 +59,7 @@ def load_rect(region, rect, load_func=load_tile, mode='all'):
 	)
 	for k in full_ims:
 		scale = (full_rect.end.x - full_rect.start.x) / full_ims[k].shape[0]
-		full_ims[k] = full_ims[k][crop_rect.start.x/scale:crop_rect.end.x/scale, crop_rect.start.y/scale:crop_rect.end.y/scale, :]
+		full_ims[k] = full_ims[k][int(crop_rect.start.x/scale):int(crop_rect.end.x/scale), int(crop_rect.start.y/scale):int(crop_rect.end.y/scale), :]
 	return full_ims
 
 class TileCache(object):
@@ -146,7 +146,7 @@ class Tiles(object):
 		# this is a list of point dicts (a point dict has keys 'x', 'y')
 		# don't include test tiles
 		print('reading tiles')
-		self.all_tiles = get_tile_list()
+	#	self.all_tiles = get_tile_list()
 		self.cache = TileCache(limit=self.parallel_tiles, mode=self.tile_mode)
 
 		self.gcs = {}
@@ -193,14 +193,13 @@ class Tiles(object):
 		x = midpoint.x / tile_size
 		y = midpoint.y / tile_size
 		k = '{}_{}_{}'.format(region, x, y)
-		starting_locations = get_starting_locations(self.gcs, self.segment_length, region=region)[k]
-		starting_locations = [loc for loc in starting_locations if rect.add_tol(-window_size).contains(loc[0]['point'])]
+		#starting_locations = get_starting_locations(self.gcs, self.segment_length, region=region)[k]
+		#starting_locations = [loc for loc in starting_locations if rect.add_tol(-window_size).contains(loc[0]['point'])]
 		return {
 			'region': region,
 			'rect': rect,
 			'search_rect': rect.add_tol(-window_size/2),
 			'cache': self.cache,
-			'starting_locations': starting_locations,
 			'gc': gc,
 		}
 

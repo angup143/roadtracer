@@ -9,7 +9,7 @@ import rtree
 import scipy.ndimage
 import sys
 import time
-
+import numpy as np
 DEBUG = False
 
 class Path(object):
@@ -274,7 +274,7 @@ def make_path_input(path, extension_vertex, segment_length, fname=None, green_po
 	#tile_point[window_size/2, window_size/2] = 1.0
 
 	tile_graph = numpy.zeros((window_size, window_size), dtype='float32')
-	tile_graph_small = numpy.zeros((window_size/4, window_size/4), dtype='float32')
+	tile_graph_small = numpy.zeros((int(window_size/4), int(window_size/4)), dtype='float32')
 	if path.gc is not None:
 		for edge in path.gc.edge_index.search(rect):
 			start = edge.src.point
@@ -285,7 +285,6 @@ def make_path_input(path, extension_vertex, segment_length, fname=None, green_po
 				#p_small = p.scale(128.0 / window_size)
 				p_small = p.scale(0.25)
 				tile_graph_small[p_small.x, p_small.y] = 1.0
-
 	tile_big = big_ims['input'][tile_origin.x:tile_origin.x+window_size, tile_origin.y:tile_origin.y+window_size, :].astype('float32') / 255.0
 	input = numpy.concatenate([tile_big, tile_path.reshape(window_size, window_size, 1), tile_point.reshape(window_size, window_size, 1)], axis=2)
 

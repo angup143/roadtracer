@@ -111,7 +111,7 @@ def eval(paths, m, session, max_path_length=MAX_PATH_LENGTH, segment_length=SEGM
 			big_time = time.time()
 		path_indices = []
 		extension_vertices = []
-		for path_idx in xrange(len(paths)):
+		for path_idx in range(len(paths)):
 			if path_lengths[path_idx] >= max_path_length:
 				continue
 			extension_vertex = paths[path_idx].pop()
