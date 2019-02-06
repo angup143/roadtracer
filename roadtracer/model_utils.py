@@ -253,8 +253,9 @@ class Path(object):
 
 def make_path_input(path, extension_vertex, segment_length, fname=None, green_points=None, blue_points=None, angle_outputs=None, angle_targets=None, action_outputs=None, action_targets=None, detect_output=None, detect_mode='normal', window_size=512):
 	big_origin = path.tile_data['rect'].start
+#	print(path.tile_data['rect'].start,path.tile_data['cache'],path.tile_data['region'], path.tile_data['rect'].start.y,path.tile_data['rect'].end.y)
 	big_ims = path.tile_data['cache'].get(path.tile_data['region'], path.tile_data['rect'])
-
+#	print('big ims', numpy.shape(big_ims['input']))
 	if not path.tile_data['rect'].add_tol(-window_size/2).contains(extension_vertex.point):
 		raise Exception('bad path {}'.format(path))
 	origin = extension_vertex.point.sub(geom.Point(window_size/2, window_size/2))
@@ -357,7 +358,7 @@ def make_path_input(path, extension_vertex, segment_length, fname=None, green_po
 
 		Image.fromarray(numpy.swapaxes((x * 255.0).astype('uint8'), 0, 1)).save(fname + 'overlay.png')
 
-	return input, detect_target.reshape(window_size/4, window_size/4, 1)
+	return input, detect_target.reshape(int(window_size/4), int(window_size/4), 1)
 
 def vector_from_angle(angle, scale=100):
 	return geom.Point(math.cos(angle) * scale, math.sin(angle) * scale)

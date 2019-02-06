@@ -14,14 +14,16 @@ tile_dir = '/home/ananya/Documents/rds-share/data/digitalglobe/indonesia/opendat
 graph_dir = '/home/ananya/data/graphs/'
 pytiles_path = '/home/ananya/data/json/pytiles.json'
 startlocs_path = '/home/ananya/data/json/starting_locations.json'
-tile_size = 4096
+tile_size = 1984
 window_size = 512
 TRAINING_REGIONS = []
 REGIONS = TRAINING_REGIONS + ['3230213_crop']
 
 def load_tile(region, i, j, mode='all'):
 	prefix = '{}/{}_{}_{}'.format(tile_dir, region, i, j)
+	print('loading', prefix)
 	sat_im = scipy.ndimage.imread(prefix + '.tif')
+	print('shape', numpy.shape(sat_im))
 	if sat_im.shape == (tile_size, tile_size, 4):
 		sat_im = sat_im[:, :, 0:3]
 	return {
@@ -31,7 +33,8 @@ def load_tile(region, i, j, mode='all'):
 def load_rect(region, rect, load_func=load_tile, mode='all'):
 	# special case for fast load: rect is single tile
 	if rect.start.x % tile_size == 0 and rect.start.y % tile_size == 0 and rect.end.x % tile_size == 0 and rect.end.y % tile_size == 0 and rect.end.x - rect.start.x == tile_size and rect.end.y - rect.start.y == tile_size:
-		return load_func(region, rect.start.x / tile_size, rect.start.y / tile_size, mode=mode)
+		tile = load_rect(region, int(rect.start.x / tile_size), int(rect.start.y / tile_size), mode=mode)
+		return tile
 
 	tile_rect = geom.Rectangle(
 		geom.Point(rect.start.x / tile_size, rect.start.y / tile_size),
@@ -48,15 +51,18 @@ def load_rect(region, rect, load_func=load_tile, mode='all'):
 			p = geom.Point(i - tile_rect.start.x, j - tile_rect.start.y).scale(tile_size)
 			tile_ims = load_func(region, i, j, mode=mode)
 			for k, im in tile_ims.items():
+				print('tile_size, im shape', tile_size, im.shape[0])
 				scale = tile_size / im.shape[0]
 				if k not in full_ims:
 					full_ims[k] = numpy.zeros((int(full_rect.lengths().x/scale), int(full_rect.lengths().y/scale), im.shape[2]), dtype='uint8')
 				full_ims[k][int(p.x/scale):int((p.x+tile_size)/scale), int(p.y/scale):int((p.y+tile_size)/scale), :] = im
+				print('scale: {},fullims: {}'.format(scale,numpy.shape(full_ims[k])))
 
 	crop_rect = geom.Rectangle(
 		rect.start.sub(full_rect.start),
 		rect.end.sub(full_rect.start)
 	)
+	print('crop_rect',crop_rect.start,crop_rect.end)
 	for k in full_ims:
 		scale = (full_rect.end.x - full_rect.start.x) / full_ims[k].shape[0]
 		full_ims[k] = full_ims[k][int(crop_rect.start.x/scale):int(crop_rect.end.x/scale), int(crop_rect.start.y/scale):int(crop_rect.end.y/scale), :]
@@ -204,7 +210,7 @@ class Tiles(object):
 		}
 
 	def get_test_tile_data(self):
-		if 'chicago' not in REGIONS:
+		if '3230213_crop' not in REGIONS:
 			return None
 
 		rect = geom.Rectangle(

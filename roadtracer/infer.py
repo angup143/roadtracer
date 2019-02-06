@@ -29,11 +29,11 @@ FOLLOW_TARGETS = False
 
 REGION = '3230213_crop'
 TILE_SIZE = 1984
-TILE_START = geom.Point(0, 0).scale(TILE_SIZE)
-TILE_END = TILE_START.add(geom.Point(2, 3).scale(TILE_SIZE))
+TILE_START = geom.Point(-3, -3).scale(TILE_SIZE)
+TILE_END = TILE_START.add(geom.Point(3, 4).scale(TILE_SIZE))
 
 USE_TL_LOCATIONS = False
-MANUAL_RELATIVE = geom.Point(0, 0).scale(TILE_SIZE)
+MANUAL_RELATIVE = geom.Point(-3, -3).scale(TILE_SIZE)
 MANUAL_POINT1 = geom.Point(660, 1044)
 MANUAL_POINT2 = geom.Point(890, 1200)
 
@@ -258,13 +258,13 @@ if __name__ == '__main__':
 	BRANCH_THRESHOLD = args.s
 	FOLLOW_THRESHOLD = args.s
 	REGION = args.r
-	if REGION == 'boston':
-		TILE_START = geom.Point(1, -1).scale(TILE_SIZE)
-	elif REGION == 'chicago':
-		TILE_START = geom.Point(-1, -2).scale(TILE_SIZE)
-	else:
-		TILE_START = geom.Point(-1, -1).scale(TILE_SIZE)
-	TILE_END = TILE_START.add(geom.Point(2, 2).scale(TILE_SIZE))
+#	if REGION == 'boston':
+#		TILE_START = geom.Point(1, -1).scale(TILE_SIZE)
+#	elif REGION == 'chicago':
+#		TILE_START = geom.Point(-1, -2).scale(TILE_SIZE)
+#	else:
+#		TILE_START = geom.Point(-1, -1).scale(TILE_SIZE)
+#	TILE_END = TILE_START.add(geom.Point(3, 4).scale(TILE_SIZE))
 
 	if args.t: tileloader.tile_dir = args.t
 	if args.g: tileloader.graph_dir = args.g
