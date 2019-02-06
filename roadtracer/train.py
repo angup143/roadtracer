@@ -63,16 +63,16 @@ tiles.prepare_training()
 test_tile_data = tiles.get_test_tile_data()
 
 # initialize model and session
-print 'initializing model'
+print('initializing model')
 m = model.Model(tiles.num_input_channels())
 session = tf.Session()
 model_path = MODEL_BASE + '/model_latest/model'
 best_path = MODEL_BASE + '/model_best/model'
 if os.path.isfile(model_path + '.meta'):
-	print '... loading existing model'
+	print('... loading existing model')
 	m.saver.restore(session, model_path)
 else:
-	print '... initializing a new model'
+	print('... initializing a new model')
 	session.run(m.init_op)
 
 # initialize subtiles
@@ -102,10 +102,10 @@ for tile in tiles.train_tiles:
 			'edge_counts': {},
 		})
 
-print 'extracted {} subtiles from {} tiles (missing {})'.format(len(subtiles), len(tiles.train_tiles), 4*len(tiles.train_tiles) - len(subtiles))
+print('extracted {} subtiles from {} tiles (missing {})'.format(len(subtiles), len(tiles.train_tiles), 4*len(tiles.train_tiles) - len(subtiles)))
 
 # initialize paths, one per subtile
-print 'loading initial paths'
+print('loading initial paths')
 paths = []
 for i, subtile in enumerate(subtiles):
 	start_loc = random.choice(subtile['starting_locations'])
@@ -165,7 +165,7 @@ for outer_it in xrange(outer_it+1, 400):
 	for path_it in xrange(2048):
 		stage_time = time.time()
 		if path_it % SAVE_ITERATIONS == 0 and False:
-			print 'begin step {}, {} ({}...{}/{})'.format(outer_it, path_it, start_idx, end_idx, len(paths))
+			print('begin step {}, {} ({}...{}/{})'.format(outer_it, path_it, start_idx, end_idx, len(paths)))
 		path_indices = random.sample(range(start_idx, end_idx), model.BATCH_SIZE)
 
 		# prepare path inputs and target angles
@@ -267,7 +267,7 @@ for outer_it in xrange(outer_it+1, 400):
 		stage_time = time.time()
 
 		if path_it % SAVE_ITERATIONS == 0:
-			print 'step {},{} train: angle_loss={}, detect_loss={}, action_loss={}, loss={}'.format(outer_it, path_it, numpy.mean(angle_losses), numpy.mean(detect_losses), numpy.mean(action_losses), numpy.mean(losses))
+			print('step {},{} train: angle_loss={}, detect_loss={}, action_loss={}, loss={}'.format(outer_it, path_it, numpy.mean(angle_losses), numpy.mean(detect_losses), numpy.mean(action_losses), numpy.mean(losses)))
 			del angle_losses[:]
 			del detect_losses[:]
 			del action_losses[:]
@@ -288,10 +288,10 @@ for outer_it in xrange(outer_it+1, 400):
 		for t in test_tile_data:
 			test_paths.append(model_utils.Path(t['gc'], t, start_loc=t['starting_locations'][1]))
 		angle_loss, detect_loss, action_loss, loss, path_length, accuracy = infer.eval(test_paths, m, session, max_path_length=2048, segment_length=SEGMENT_LENGTH, follow_targets=True, max_batch_size=model.BATCH_SIZE, window_size=WINDOW_SIZE, verbose=False)
-		print '*** TEST ***: angle_loss={}, detect_loss={}, action_loss={}, loss={}, len={}, accuracy={}/{}'.format(angle_loss, detect_loss, action_loss, loss, path_length, accuracy, best_accuracy)
+		print('*** TEST ***: angle_loss={}, detect_loss={}, action_loss={}, loss={}, len={}, accuracy={}/{}'.format(angle_loss, detect_loss, action_loss, loss, path_length, accuracy, best_accuracy))
 		if best_accuracy is None or accuracy > best_accuracy:
 			best_accuracy = accuracy
 			m.saver.save(session, best_path)
 
 	times['test_total'] += time.time() - start_time
-	print times
+	print(times)
